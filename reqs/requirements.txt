@@ -1,0 +1,11 @@
+altgraph==0.17.3
+fdb==1.4.9
+future==0.18.2
+macholib==1.16.2
+num2t4ru==2.0.0
+number-to-string==1.0.3
+pefile==2017.8.1
+PyInstaller==3.4
+python-dateutil==2.8.2
+pywin32-ctypes==0.2.0
+six==1.16.0
