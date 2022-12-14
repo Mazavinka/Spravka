@@ -5,7 +5,7 @@ from interface import Ui_MainWindow
 from PyQt5.QtWidgets import QCompleter
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from reference import ReferenceNalog, ReferenceWithoutMatPom
+from reference import ReferenceNalog, ReferenceWithoutMatPom, ReferencePosob
 
 con = fdb.connect(dsn='asup5:D:Master\Data\BUHDATA.GDB', user='sysdba',
                   password='masterkey')
@@ -25,7 +25,8 @@ class GetRef:
         self.flag_mat_pom = flag_mat_pom
 
     def get_posob(self):
-        cur.execute("EXECUTE PROCEDURE GETPOSREZ(205,'01.10.2022',22795, 2)")
+        #cur.execute("EXECUTE PROCEDURE GETPOSREZ(205,'01.10.2022',22795, 2)")
+        cur.execute("EXECUTE PROCEDURE GETPOSREZ('{0}','{1}','{2}', '{3}')".format(self.kpodr, self.d, self.tn, self.dis))
         data = cur.fetchall()
         return data
 
@@ -136,6 +137,13 @@ class Interface:
         if self.ui.radioButton_5.isChecked():
             # Налоговые отчисления
             reference = ReferenceNalog(self.ui.spinBox_2.text(), self.selected_employe['fam'], self.selected_employe['prof'], self.result, "templates/nalog.html")
+            reference.get_reference_header()
+            reference.get_reference_body()
+            reference.get_reference_footer()
+            reference.save_and_open_reference()
+        if self.ui.radioButton_4.isChecked():
+            # Пособия
+            reference = ReferencePosob(self.ui.spinBox_2.text(), self.selected_employe['fam'], self.selected_employe['prof'], self.result, "templates/posob.html")
             reference.get_reference_header()
             reference.get_reference_body()
             reference.get_reference_footer()

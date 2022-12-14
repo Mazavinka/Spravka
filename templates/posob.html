@@ -23,13 +23,24 @@
         </div>
         <table class="table">
             <tr>
-             <th>Месяц</th>
-             <th>Заработная плата</th>
-             <th>П/Налог</th>
-             <th>Пенс. <br> взносы</th>
-             <th>Проф. <br> взносы</th>
-             <th>Исп. <br> листы</th>
-             <th>К выдаче</th>
+             <th rowspan="2">Месяц</th>
+             <th rowspan="2">Заработ. плата</th>
+             <th rowspan="2">Мат. пом</th>
+             <th rowspan="2">Мат. пом. на <br> рожден. ребенка</th>
+             <th rowspan="2">Мат. пом. на <br> рожден. ребенка</th>
+             <th colspan="5">Пособия по уходу за детьми</th>
+             <th rowspan="2">Исп. <br> листы / элементы</th>
+             <th rowspan="2">Подоход. налог</th>
+             <th rowspan="2">Пенс. взносы</th>
+             <th rowspan="2">Проф. взносы</th>
+             <th rowspan="2">на руки</th>  
+            </tr>
+            <tr>
+                <th>до 3-х лет</th>
+                <th>от 3-х до 18-и</th>
+                <th>ед. пособ.на рожд. ребенка</th>
+                <th>ед. пособ. до 12 нед.</th>
+                <th>дети инвалиды</th>            
             </tr>
           <div class="ruk">
             <p>Руководитель предприятия ______________________________________________</p>
@@ -78,6 +89,9 @@
             text-align: center;
         
             border: 1px solid black;
+        }
+        th{
+            font-size: 10px;
         }
         .summ{
             margin: 10px 0 100px 0;

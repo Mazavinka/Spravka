@@ -38,6 +38,17 @@ class ReferenceWithoutMatPom:
         self.vid = 0
         self.alim = 0
 
+        self.matpom = 0
+        self.mat_pom_rozhdenie_rebenka = 0
+        self.posob_po_berem_i_rodam = 0
+        self.posob_do_3_let = 0
+        self.posob_do_18_let = 0
+        self.posob_na_rozhdenie = 0
+        self.posob_do_12_ned = 0
+        self.posob_deti_invalid = 0
+        self.isp_list_and_alim = 0
+
+
 
     def num_to_text(self, number):
         int_units = ((u'рубль', u'рубля', u'рублей'), 'm')
@@ -125,10 +136,6 @@ class ReferenceWithoutMatPom:
 
 
 class ReferenceNalog(ReferenceWithoutMatPom):
-    """def __init__(self, month_count, worker_name, worker_prof, data):
-        super().__init__(month_count, worker_name, worker_prof, data)"""
-
-
     def get_reference_body(self):
         for i in self.data[::-1]:
             month = int(datetime.strftime(i[0][0], "%m"))
@@ -188,6 +195,108 @@ class ReferenceNalog(ReferenceWithoutMatPom):
         self.all_text.insert(self.start_index_table, "<table></table>")
         self.start_index_table += 1
         self.all_text.insert(self.start_index_table, """<div class="summ"><p>(""" + self.num_to_text(self.vid).upper() + """)</p></div>""")
+
+
+class ReferencePosob(ReferenceWithoutMatPom):
+    def __init__(self, month_count, worker_name, worker_prof, data, template_path):
+        super().__init__(month_count, worker_name, worker_prof, data, template_path)
+        self.start_index_table = 44
+
+    def get_reference_body(self):
+        for i in self.data[::-1]:
+            month = int(datetime.strftime(i[0][0], "%m"))
+            year = str(datetime.strftime(i[0][0], "%Y"))
+
+            self.all_text.insert(self.start_index_table, "<tr>")
+            self.start_index_table += 1
+            self.all_text.insert(self.start_index_table, "<td>" + self.date_number_to_text[str(month)] + " " + year + 'г.' + "</td>")
+            self.start_index_table += 1
+            self.all_text.insert(self.start_index_table, "<td>" + '%.2f' % float(i[0][1]) + "</td>")
+            self.nach += float(i[0][1])
+            self.start_index_table += 1
+            self.all_text.insert(self.start_index_table, "<td>" + '%.2f' % float(i[0][5]) + "</td>")
+            self.start_index_table += 1
+            self.matpom += float(i[0][5])
+            self.all_text.insert(self.start_index_table, "<td>" + '%.2f' % float(i[0][6]) + "</td>")
+            self.start_index_table += 1
+            self.mat_pom_rozhdenie_rebenka += float(i[0][6])
+            self.all_text.insert(self.start_index_table, "<td>" + '%.2f' % float(i[0][8]) + "</td>")
+            self.start_index_table += 1
+            self.posob_po_berem_i_rodam += float(i[0][8])
+            self.all_text.insert(self.start_index_table, "<td>" + '%.2f' % float(i[0][2]) + "</td>")
+            self.start_index_table += 1
+            self.posob_do_3_let += float(i[0][2])
+            self.all_text.insert(self.start_index_table, "<td>" + '%.2f' % float(i[0][3]) + "</td>")
+            self.start_index_table += 1
+            self.posob_do_18_let += float(i[0][3])
+            self.all_text.insert(self.start_index_table, "<td>" + '%.2f' % float(i[0][7]) + "</td>")
+            self.start_index_table += 1
+            self.posob_na_rozhdenie += float(i[0][7])
+            self.all_text.insert(self.start_index_table, "<td>" + '%.2f' % float(i[0][9]) + "</td>")
+            self.start_index_table += 1
+            self.posob_do_12_ned += float(i[0][9])
+            self.all_text.insert(self.start_index_table, "<td>" + '%.2f' % float(i[0][4]) + "</td>")
+            self.start_index_table += 1
+            self.posob_deti_invalid += float(i[0][4])
+            self.all_text.insert(self.start_index_table, "<td>" + '%.2f' % float(i[0][13]) + "</td>")
+            self.start_index_table += 1
+            self.isp_list_and_alim += float(i[0][13])
+            self.all_text.insert(self.start_index_table, "<td>" + '%.2f' % float(i[0][10]) + "</td>")
+            self.start_index_table += 1
+            self.podn += float(i[0][10])
+            self.all_text.insert(self.start_index_table, "<td>" + '%.2f' % float(i[0][11]) + "</td>")
+            self.start_index_table += 1
+            self.penn += float(i[0][11])
+            self.all_text.insert(self.start_index_table, "<td>" + '%.2f' % float(i[0][12]) + "</td>")
+            self.start_index_table += 1
+            self.prof += float(i[0][12])
+            self.all_text.insert(self.start_index_table, "<td>" + '%.2f' % float(i[0][14]) + "</td>")
+            self.start_index_table += 1
+            self.vid += float(i[0][14])
+            self.all_text.insert(self.start_index_table, "</tr>")
+            self.start_index_table += 1
+
+    def get_reference_footer(self):
+        self.all_text.insert(self.start_index_table, """<tr id="id">""")
+        self.start_index_table += 1
+        self.all_text.insert(self.start_index_table, """<td  id="id2">Итого:</td>""")
+        self.start_index_table += 1
+        self.all_text.insert(self.start_index_table, """<td id="id">""" + '%.2f' % self.nach + """</td>""")
+        self.start_index_table += 1
+        self.all_text.insert(self.start_index_table, """<td id="id">""" + '%.2f' % self.matpom + """</td>""")
+        self.start_index_table += 1
+        self.all_text.insert(self.start_index_table, """<td id="id">""" + '%.2f' % self.mat_pom_rozhdenie_rebenka + """</td>""")
+        self.start_index_table += 1
+        self.all_text.insert(self.start_index_table, """<td id="id">""" + '%.2f' % self.posob_po_berem_i_rodam + """</td>""")
+        self.start_index_table += 1
+        self.all_text.insert(self.start_index_table, """<td id="id">""" + '%.2f' % self.posob_do_3_let + """</td>""")
+        self.start_index_table += 1
+        self.all_text.insert(self.start_index_table, """<td id="id">""" + '%.2f' % self.posob_do_18_let + """</td>""")
+        self.start_index_table += 1
+        self.all_text.insert(self.start_index_table, """<td id="id">""" + '%.2f' % self.posob_na_rozhdenie + """</td>""")
+        self.start_index_table += 1
+        self.all_text.insert(self.start_index_table, """<td id="id">""" + '%.2f' % self.posob_do_12_ned + """</td>""")
+        self.start_index_table += 1
+        self.all_text.insert(self.start_index_table, """<td id="id">""" + '%.2f' % self.posob_deti_invalid + """</td>""")
+        self.start_index_table += 1
+        self.all_text.insert(self.start_index_table, """<td id="id">""" + '%.2f' % self.isp_list_and_alim + """</td>""")
+        self.start_index_table += 1
+        self.all_text.insert(self.start_index_table, """<td id="id">""" + '%.2f' % self.podn + """</td>""")
+        self.start_index_table += 1
+        self.all_text.insert(self.start_index_table, """<td id="id">""" + '%.2f' % self.penn + """</td>""")
+        self.start_index_table += 1
+        self.all_text.insert(self.start_index_table, """<td id="id">""" + '%.2f' % self.prof + """</td>""")
+        self.start_index_table += 1
+        self.all_text.insert(self.start_index_table, """<td id="id">""" + '%.2f' % self.vid + """</td>""")
+        self.start_index_table += 1
+        self.all_text.insert(self.start_index_table, "</tr>")
+        self.start_index_table += 1
+        self.all_text.insert(self.start_index_table, "</table>")
+        self.start_index_table += 1
+        self.all_text.insert(self.start_index_table, "<table></table>")
+        self.start_index_table += 1
+        self.all_text.insert(self.start_index_table, """<div class="summ"><p>(""" + self.num_to_text(self.vid).upper() + """)</p></div>""")
+
 
 
 
