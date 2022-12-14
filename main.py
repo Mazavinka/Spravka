@@ -3,11 +3,9 @@ import sys
 from PyQt5 import QtWidgets
 from interface import Ui_MainWindow
 from PyQt5.QtWidgets import QCompleter
-from datetime import date, datetime
+from datetime import datetime
 from dateutil.relativedelta import relativedelta
-import os
-import webbrowser
-from num2t4ru import decimal2text
+from reference import ReferenceNalog, ReferenceWithoutMatPom
 
 con = fdb.connect(dsn='asup5:D:Master\Data\BUHDATA.GDB', user='sysdba',
                   password='masterkey')
@@ -129,225 +127,19 @@ class Interface:
             print(i)
 
         if self.ui.radioButton_6.isChecked():
-            self.get_spravka()
+            # Без материальной помощи
+            reference = ReferenceWithoutMatPom(self.ui.spinBox_2.text(), self.selected_employe['fam'], self.selected_employe['prof'], self.result, "templates/matpom2.html")
+            reference.get_reference_header()
+            reference.get_reference_body()
+            reference.get_reference_footer()
+            reference.save_and_open_reference()
         if self.ui.radioButton_5.isChecked():
-            self.get_nalog_spravka()
-
-    def get_nalog_spravka(self):
-        with open('templates/nalog.html', 'r+', encoding="utf8") as file:
-            all_text = file.readlines()
-            all_text = [i for i in all_text]
-
-            if self.ui.spinBox_2.text() == "1":
-                all_text[16] = "<p> за " + self.ui.spinBox_2.text() + " месяц</p>"
-            elif self.ui.spinBox_2.text() == "2" or self.ui.spinBox_2.text() == "3" or self.ui.spinBox_2.text() == "4":
-                all_text[16] = "<p> за " + self.ui.spinBox_2.text() + " месяцa</p>"
-            else:
-                all_text[16] = "<p> за " + self.ui.spinBox_2.text() + " месяцев</p>"
-
-            all_text[19] = "<p>гр. " + self.selected_employe['fam'] + "</p>"
-            all_text[21] = "<p>в качестве: " + self.selected_employe['prof'] +"</p>"
-
-
-            start_index_table = 33
-
-            date_number_to_text = {
-                '1': 'Январь',
-                '2': 'Февраль',
-                '3': 'Март',
-                '4': 'Апрель',
-                '5': 'Май',
-                '6': 'Июнь',
-                '7': 'Июль',
-                '8': 'Август',
-                '9': 'Сентябрь',
-                '10': 'Октябрь',
-                '11': 'Ноябрь',
-                '12': 'Декабрь'
-            }
-
-            nach = 0
-            podn = 0
-            penn = 0
-            prof = 0
-            isp = 0
-            vid = 0
-            alim = 0
-
-            for i in self.result[::-1]:
-                month = int(datetime.strftime(i[0][0], "%m"))
-                year = str(datetime.strftime(i[0][0], "%Y"))
-
-                all_text.insert(start_index_table, "<tr>")
-                start_index_table += 1
-                all_text.insert(start_index_table, "<td>" + date_number_to_text[str(month)] + " " + year + 'г.' + "</td>")
-                start_index_table += 1
-                all_text.insert(start_index_table, "<td>" + '%.2f' % float(i[0][1]) + "</td>")
-                nach += float(i[0][1])
-                start_index_table += 1
-                all_text.insert(start_index_table, "<td>" + '%.2f' % float(i[0][2]) + "</td>")
-                start_index_table += 1
-                podn += float(i[0][2])
-                all_text.insert(start_index_table, "<td>" + '%.2f' % float(i[0][3]) + "</td>")
-                start_index_table += 1
-                penn += float(i[0][3])
-                all_text.insert(start_index_table, "<td>" + '%.2f' % float(i[0][6]) + "</td>")
-                start_index_table += 1
-                prof += float(i[0][6])
-                all_text.insert(start_index_table, "<td>" + '%.2f' % float(i[0][5]) + "</td>")
-                start_index_table += 1
-                isp += float(i[0][5])
-                all_text.insert(start_index_table, "<td>" + '%.2f' % float(i[0][7]) +"</td>")
-                start_index_table += 1
-                alim += float(i[0][7])
-                all_text.insert(start_index_table, "<td>" + '%.2f' % float(i[0][4]) +"</td>")
-                start_index_table += 1
-                vid += float(i[0][4])
-                all_text.insert(start_index_table, "</tr>")
-                start_index_table += 1
-
-            all_text.insert(start_index_table, """<tr id="id">""")
-            start_index_table += 1
-            all_text.insert(start_index_table, """<td  id="id2">Итого:</td>""")
-            start_index_table += 1
-            all_text.insert(start_index_table, """<td id="id">""" + '%.2f' % nach + """</td>""")
-            start_index_table += 1
-            all_text.insert(start_index_table, """<td id="id">""" + '%.2f' % podn + """</td>""")
-            start_index_table += 1
-            all_text.insert(start_index_table, """<td id="id">""" + '%.2f' % penn + """</td>""")
-            start_index_table += 1
-            all_text.insert(start_index_table, """<td id="id">""" + '%.2f' % prof + """</td>""")
-            start_index_table += 1
-            all_text.insert(start_index_table, """<td id="id">""" + '%.2f' % isp + """</td>""")
-            start_index_table += 1
-            all_text.insert(start_index_table, """<td id="id">""" + '%.2f' % alim + """</td>""")
-            start_index_table += 1
-            all_text.insert(start_index_table, """<td id="id">""" + '%.2f' % vid + """</td>""")
-            start_index_table += 1
-            all_text.insert(start_index_table, "</tr>")
-            start_index_table += 1
-            all_text.insert(start_index_table, "</table>")
-            start_index_table += 1
-            all_text.insert(start_index_table, "<table></table>")
-            start_index_table += 1
-            all_text.insert(start_index_table, """<div class="summ"><p>(""" + self.num_to_text(vid).upper() +""")</p></div>""")
-
-
-
-            new_file = open("Spravka.html", 'w+', encoding="utf8")
-            for i in all_text:
-                new_file.write(i + '\n')
-
-        spravka_url = os.path.abspath(os.curdir + "/Spravka.html")
-        webbrowser.open(spravka_url)
-
-    def get_spravka(self):
-        with open('templates/matpom2.html', 'r+', encoding="utf8") as file:
-            all_text = file.readlines()
-            all_text = [i for i in all_text]
-
-            if self.ui.spinBox_2.text() == "1":
-                all_text[16] = "<p> за " + self.ui.spinBox_2.text() + " месяц</p>"
-            elif self.ui.spinBox_2.text() == "2" or self.ui.spinBox_2.text() == "3" or self.ui.spinBox_2.text() == "4":
-                all_text[16] = "<p> за " + self.ui.spinBox_2.text() + " месяцa</p>"
-            else:
-                all_text[16] = "<p> за " + self.ui.spinBox_2.text() + " месяцев</p>"
-
-            all_text[19] = "<p>гр. " + self.selected_employe['fam'] + "</p>"
-            all_text[21] = "<p>в качестве: " + self.selected_employe['prof'] +"</p>"
-
-
-            start_index_table = 33
-
-            date_number_to_text = {
-                '1': 'Январь',
-                '2': 'Февраль',
-                '3': 'Март',
-                '4': 'Апрель',
-                '5': 'Май',
-                '6': 'Июнь',
-                '7': 'Июль',
-                '8': 'Август',
-                '9': 'Сентябрь',
-                '10': 'Октябрь',
-                '11': 'Ноябрь',
-                '12': 'Декабрь'
-            }
-
-            nach = 0
-            podn = 0
-            penn = 0
-            prof = 0
-            isp = 0
-            vid = 0
-
-            for i in self.result[::-1]:
-                month = int(datetime.strftime(i[0][0], "%m"))
-                year = str(datetime.strftime(i[0][0], "%Y"))
-
-                all_text.insert(start_index_table, "<tr>")
-                start_index_table += 1
-                all_text.insert(start_index_table, "<td>" + date_number_to_text[str(month)] + " " + year + 'г.' + "</td>")
-                start_index_table += 1
-                all_text.insert(start_index_table, "<td>" + '%.2f' % float(i[0][1]) + "</td>")
-                nach += float(i[0][1])
-                start_index_table += 1
-                all_text.insert(start_index_table, "<td>" + '%.2f' % float(i[0][2]) + "</td>")
-                start_index_table += 1
-                podn += float(i[0][2])
-                all_text.insert(start_index_table, "<td>" + '%.2f' % float(i[0][3]) + "</td>")
-                start_index_table += 1
-                penn += float(i[0][3])
-                all_text.insert(start_index_table, "<td>" + '%.2f' % float(i[0][6]) + "</td>")
-                start_index_table += 1
-                prof += float(i[0][6])
-                all_text.insert(start_index_table, "<td>" + '%.2f' % float(i[0][5]) + "</td>")
-                start_index_table += 1
-                isp += float(i[0][5])
-                all_text.insert(start_index_table, "<td>" + '%.2f' % float(i[0][4]) +"</td>")
-                start_index_table += 1
-                vid += float(i[0][4])
-                all_text.insert(start_index_table, "</tr>")
-                start_index_table += 1
-
-            all_text.insert(start_index_table, """<tr id="id">""")
-            start_index_table += 1
-            all_text.insert(start_index_table, """<td  id="id2">Итого:</td>""")
-            start_index_table += 1
-            all_text.insert(start_index_table, """<td id="id">""" + '%.2f' % nach + """</td>""")
-            start_index_table += 1
-            all_text.insert(start_index_table, """<td id="id">""" + '%.2f' % podn + """</td>""")
-            start_index_table += 1
-            all_text.insert(start_index_table, """<td id="id">""" + '%.2f' % penn + """</td>""")
-            start_index_table += 1
-            all_text.insert(start_index_table, """<td id="id">""" + '%.2f' % prof + """</td>""")
-            start_index_table += 1
-            all_text.insert(start_index_table, """<td id="id">""" + '%.2f' % isp + """</td>""")
-            start_index_table += 1
-            all_text.insert(start_index_table, """<td id="id">""" + '%.2f' % vid + """</td>""")
-            start_index_table += 1
-            all_text.insert(start_index_table, "</tr>")
-            start_index_table += 1
-            all_text.insert(start_index_table, "</table>")
-            start_index_table += 1
-            all_text.insert(start_index_table, "<table></table>")
-            start_index_table += 1
-            all_text.insert(start_index_table, """<div class="summ"><p>(""" + self.num_to_text(vid).upper() +""")</p></div>""")
-
-
-
-            new_file = open("Spravka.html", 'w+', encoding="utf8")
-            for i in all_text:
-                new_file.write(i + '\n')
-
-        spravka_url = os.path.abspath(os.curdir + "/Spravka.html")
-        webbrowser.open(spravka_url)
-
-    def num_to_text(self, num):
-        int_units = ((u'рубль', u'рубля', u'рублей'), 'm')
-        exp_units = ((u'копейка', u'копейки', u'копеек'), 'f')
-
-        return decimal2text(num, int_units=int_units,exp_units=exp_units)
+            # Налоговые отчисления
+            reference = ReferenceNalog(self.ui.spinBox_2.text(), self.selected_employe['fam'], self.selected_employe['prof'], self.result, "templates/nalog.html")
+            reference.get_reference_header()
+            reference.get_reference_body()
+            reference.get_reference_footer()
+            reference.save_and_open_reference()
 
 
 if __name__ == "__main__":
