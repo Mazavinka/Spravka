@@ -1,20 +1,14 @@
-import fdb
 import sys
 from PyQt5 import QtWidgets
+from PyQt5 import QtCore
+
 from interface import Ui_MainWindow
 from PyQt5.QtWidgets import QCompleter
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from db import singleton_db
 from reference import ReferenceNalog, ReferenceWithoutMatPom, ReferencePosob
 
-con = fdb.connect(dsn='asup5:D:Master\Data\BUHDATA.GDB', user='sysdba',
-                  password='masterkey')
-
-cur = con.cursor()
-
-#cur.execute("SELECT SUM(R.SUMMA) FROM UV_REZNACH R, NACHISL N WHERE KPODR=91 AND r.ndate='01.09.2022' AND TN=24039 AND R.NCODE=N.NCODE and N.PENCODE<>205")
-#cur.execute("EXECUTE PROCEDURE GETNALREZ('259', '01.10.2022', '24110', '1', '0')")
-#cur.execute("EXECUTE PROCEDURE GETPOSREZ(205,'01.10.2022',22795, 2)")
 
 class GetRef:
     def __init__(self, kpodr, d, tn, dis, flag_mat_pom):
@@ -23,36 +17,33 @@ class GetRef:
         self.tn = tn
         self.dis = dis
         self.flag_mat_pom = flag_mat_pom
+        self.cursor = singleton_db
 
     def get_posob(self):
-        #cur.execute("EXECUTE PROCEDURE GETPOSREZ(205,'01.10.2022',22795, 2)")
-        cur.execute("EXECUTE PROCEDURE GETPOSREZ('{0}','{1}','{2}', '{3}')".format(self.kpodr, self.d, self.tn, self.dis))
-        data = cur.fetchall()
+        self.cursor.execute("EXECUTE PROCEDURE GETPOSREZ('{0}','{1}','{2}', '{3}')".format(self.kpodr, self.d, self.tn, self.dis))
+        data = self.cursor.fetchall()
         return data
 
     def get_data(self):
-        cur.execute("EXECUTE PROCEDURE GETNALREZ('{0}', '{1}', '{2}', '{3}', '{4}')".format(self.kpodr, self.d, self.tn, self.dis, self.flag_mat_pom))
-        data = cur.fetchall()
+        self.cursor.execute("EXECUTE PROCEDURE GETNALREZ('{0}', '{1}', '{2}', '{3}', '{4}')".format(self.kpodr, self.d, self.tn, self.dis, self.flag_mat_pom))
+        data = self.cursor.fetchall()
         return data
 
-    def get_prof(self, tn):
-        cur.execute("select p.NPROF from kartochka k, prof p where k.kprof=p.KPROF and tn='{0}'".format(tn))
-        result = cur.fetchall()
-        return result
-
-
     def get_employee(self):
-        cur.execute("SELECT k.FAM, k.tn, k.kpodr from KARTOCHKA k")
-        all_employee = cur.fetchall()
+        self.cursor.execute("SELECT k.FAM, k.tn, k.kpodr, p.nprof from kartochka k, prof p where k.kprof=p.kprof")
+        all_employee = self.cursor.fetchall()
         self.all_employers = {'data': []}
         id = 1
         for i in all_employee:
-            employee_prof = str(self.get_prof(i[1])[0][0])
-            a = {'id': str(id), 'fam': i[0], 'tn': i[1], 'kpodr': str(i[2]), 'prof': employee_prof}
-            self.all_employers['data'].append(a)
+            temp = {'id': str(id),
+                    'fam': i[0],
+                    'tn': i[1],
+                    'kpodr': str(i[2]),
+                    'prof': str(i[3]),
+                    }
+            self.all_employers['data'].append(temp)
             id += 1
         return self.all_employers
-
 
 
 class Interface:
@@ -67,8 +58,10 @@ class Interface:
 
         self.ui.comboBox_2.addItem('')
         for i in self.all_employers['data']:
-            if i['fam'].lower() != 'пту' and i['fam'].lower() != 'гпту':
-                self.ui.comboBox_2.addItem(i['fam'] + ' | ' + i['id'])
+            self.ui.comboBox_2.addItem(i['fam'] + ' | ' + i['id'])
+            self.ui.comboBox_2.setItemData(int(i['id']), 'Профессия: ' + i['prof'], QtCore.Qt.ToolTipRole)
+            """if i['fam'].lower() != 'пту' and i['fam'].lower() != 'гпту':
+                self.ui.comboBox_2.addItem(i['fam'] + ' | ' + i['id'])"""
 
         self.ui.comboBox_2.currentIndexChanged.connect(self.check_employee)
 
@@ -80,8 +73,6 @@ class Interface:
         self.ui.comboBox_3.addItems(all_buh)
 
         self.ui.pushButton_2.clicked.connect(self.on_click)
-
-
 
         MainWindow.show()
         sys.exit(app.exec_())
@@ -158,5 +149,3 @@ if __name__ == "__main__":
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())"""
-
-#https://tokmakov.msk.ru/blog/item/78
