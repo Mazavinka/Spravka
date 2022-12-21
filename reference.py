@@ -61,6 +61,24 @@ class ReferenceWithoutMatPom:
             all_text = [i for i in all_text]
             return all_text
 
+    def set_firm_blank(self, isChecked, path_to_css):
+        with open(path_to_css, 'r', encoding="utf-8") as file:
+            self.style_css = file.readlines()
+            self.style_css = [i for i in self.style_css]
+
+            if isChecked:
+                self.style_css[9] = "/*            display: none;*/" + "\n"
+                print("show")
+            else:
+                self.style_css[9] = "            display: none;" + "\n"
+                print("hide")
+
+            new_file = open(path_to_css, 'w+', encoding="utf8")
+            for i in self.style_css:
+                new_file.write(i)
+
+
+
     def get_reference_header(self):
         if self.month_count  == "1":
             self.all_text[16] = "<p> за " + self.month_count + " месяц</p>"

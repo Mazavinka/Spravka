@@ -177,6 +177,8 @@ class Interface:
         print(self.mat_pom_flag)
 
     def draw_reference(self, reference):
+        reference.set_firm_blank(self.ui.checkBox_3.isChecked(), self.path_to_css)
+        reference.set_firm_blank(self.ui.checkBox.isChecked(), self.path_to_css)
         reference.get_reference_header()
         try:
             reference.get_reference_body()
@@ -202,14 +204,17 @@ class Interface:
                 if self.ui.radioButton_6.isChecked():
                     # Без материальной помощи
                     reference = ReferenceWithoutMatPom(self.ui.spinBox_2.text(), self.selected_employe['fam'], self.selected_employe['prof'], self.result, "templates/matpom2.html")
+                    self.path_to_css = "templates/css/style.css"
                     self.draw_reference(reference)
                 if self.ui.radioButton_5.isChecked():
                     # Налоговые отчисления
                     reference = ReferenceNalog(self.ui.spinBox_2.text(), self.selected_employe['fam'], self.selected_employe['prof'], self.result, "templates/nalog.html")
+                    self.path_to_css = "templates/css/style.css"
                     self.draw_reference(reference)
                 if self.ui.radioButton_4.isChecked():
                     # Пособия
                     reference = ReferencePosob(self.ui.spinBox_2.text(), self.selected_employe['fam'], self.selected_employe['prof'], self.result, "templates/posob.html")
+                    self.path_to_css = "templates/css/style_posob.css"
                     self.draw_reference(reference)
                 self.ui.comboBox_2.setCurrentText('')
                 self.result = []
@@ -225,14 +230,17 @@ class Interface:
                 if self.ui.radioButton_3.isChecked():
                     # Без материальной помощи
                     reference = ReferenceWithoutMatPom(self.ui.spinBox.text(), self.selected_employe['fam'],self.selected_employe['prof'], self.result, "templates/matpom2.html")
+                    self.path_to_css = "templates/css/style.css"
                     self.draw_reference(reference)
                 if self.ui.radioButton_2.isChecked():
                     # Налоговые отчисления
                     reference = ReferenceNalog(self.ui.spinBox.text(), self.selected_employe['fam'], self.selected_employe['prof'], self.result, "templates/nalog.html")
+                    self.path_to_css = "templates/css/style.css"
                     self.draw_reference(reference)
                 if self.ui.radioButton.isChecked():
                     # Пособия
                     reference = ReferencePosob(self.ui.spinBox.text(), self.selected_employe['fam'],self.selected_employe['prof'], self.result, "templates/posob.html")
+                    self.path_to_css = "templates/css/style_posob.css"
                     self.draw_reference(reference)
                 self.ui.comboBox.setCurrentText('')
                 self.result = []
