@@ -8,4 +8,5 @@ class DataBase:
 
         self.cur = self.con.cursor()
 
+
 singleton_db = DataBase().cur
