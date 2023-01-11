@@ -8,6 +8,45 @@ from dateutil.relativedelta import relativedelta
 from db import singleton_db
 from reference import ReferenceNalog, ReferenceWithoutMatPom, ReferencePosob
 
+class GetAllEmployersFromDb:
+
+    def __init__(self):
+        self.cursor = singleton_db
+
+    def get_employee(self):
+        self.cursor.execute("SELECT k.FAM, k.tn, k.kpodr, p.nprof from kartochka k, prof p where k.kprof=p.kprof")
+        all_employee = self.cursor.fetchall()
+        self.all_employers = {'data': []}
+        id = 1
+        for i in all_employee:
+            temp = {'id': str(id),
+                    'fam': i[0],
+                    'tn': i[1],
+                    'kpodr': str(i[2]),
+                    'prof': str(i[3]),
+                    }
+            self.all_employers['data'].append(temp)
+            id += 1
+        return self.all_employers
+
+    def get_employee_uv(self):
+        self.cursor.execute(
+            "SELECT k.FAM, k.tn, k.kpodr, p.nprof, pod.npodr, k.uv_date from UV_KART k, prof p, podr pod where k.kprof=p.kprof and pod.kpodr=k.kpodr")
+        all_employee = self.cursor.fetchall()
+        self.all_employers = {'data': []}
+        id = 1
+        for i in all_employee:
+            temp = {'id': str(id),
+                    'fam': i[0],
+                    'tn': i[1],
+                    'kpodr': str(i[2]),
+                    'prof': i[3],
+                    'npodr': i[4],
+                    'uv_date': datetime.strftime(i[5], '%d.%m.%Y'),
+                    }
+            self.all_employers['data'].append(temp)
+            id += 1
+        return self.all_employers
 
 class GetRef:
     def __init__(self, kpodr, d, tn, dis, flag_mat_pom):
@@ -28,22 +67,6 @@ class GetRef:
         data = self.cursor.fetchall()
         return data
 
-    def get_employee(self):
-        self.cursor.execute("SELECT k.FAM, k.tn, k.kpodr, p.nprof from kartochka k, prof p where k.kprof=p.kprof")
-        all_employee = self.cursor.fetchall()
-        self.all_employers = {'data': []}
-        id = 1
-        for i in all_employee:
-            temp = {'id': str(id),
-                    'fam': i[0],
-                    'tn': i[1],
-                    'kpodr': str(i[2]),
-                    'prof': str(i[3]),
-                    }
-            self.all_employers['data'].append(temp)
-            id += 1
-        return self.all_employers
-
     def get_posob_uv(self):
         self.cursor.execute("EXECUTE PROCEDURE GETPOSREZ_UV('{0}','{1}','{2}', '{3}')".format(self.kpodr, self.d, self.tn, self.dis))
         data = self.cursor.fetchall()
@@ -53,24 +76,6 @@ class GetRef:
         self.cursor.execute("EXECUTE PROCEDURE GETNALREZ_UV('{0}', '{1}', '{2}', '{3}', '{4}')".format(self.kpodr, self.d, self.tn, self.dis, self.flag_mat_pom))
         data = self.cursor.fetchall()
         return data
-
-    def get_employee_uv(self):
-        self.cursor.execute("SELECT k.FAM, k.tn, k.kpodr, p.nprof, pod.npodr, k.uv_date from UV_KART k, prof p, podr pod where k.kprof=p.kprof and pod.kpodr=k.kpodr")
-        all_employee = self.cursor.fetchall()
-        self.all_employers = {'data': []}
-        id = 1
-        for i in all_employee:
-            temp = {'id': str(id),
-                    'fam': i[0],
-                    'tn': i[1],
-                    'kpodr': str(i[2]),
-                    'prof': i[3],
-                    'npodr': i[4],
-                    'uv_date': datetime.strftime(i[5], '%d.%m.%Y'),
-                    }
-            self.all_employers['data'].append(temp)
-            id += 1
-        return self.all_employers
 
 
 class Interface:
@@ -82,11 +87,12 @@ class Interface:
         self.mat_pom_flag = 0
         self.msg_error = QMessageBox()
 
-        #корявый метод для вызова экземпляра класса
+        all_employers_test = GetAllEmployersFromDb()
+
         # Работающие
-        self.all_employers = GetRef(259, '01.10.2022', 24110, 1, self.mat_pom_flag).get_employee()
+        self.all_employers = all_employers_test.get_employee()
         # Уволенные
-        self.all_employers_uv = GetRef(259, '01.10.2022', 24110, 1, self.mat_pom_flag).get_employee_uv()
+        self.all_employers_uv = all_employers_test.get_employee_uv()
 
         self.ui.comboBox_2.addItem('')
         self.ui.comboBox.addItem('')
@@ -177,15 +183,26 @@ class Interface:
         print(self.mat_pom_flag)
 
     def draw_reference(self, reference):
-        reference.set_firm_blank(self.ui.checkBox_3.isChecked(), self.path_to_css)
-        reference.set_firm_blank(self.ui.checkBox.isChecked(), self.path_to_css)
-        reference.get_reference_header()
-        try:
-            reference.get_reference_body()
-            reference.get_reference_footer()
-            reference.save_and_open_reference()
-        except TypeError:
-            QMessageBox.critical(self.msg_error, 'Ошибка', 'У данного сотрудника нет данных за указанный период', QMessageBox.Ok)
+        if self.ui.tabWidget.currentIndex() == 1:
+            reference.set_firm_blank(self.ui.checkBox_3.isChecked(), self.path_to_css)
+            reference.get_reference_header()
+            try:
+                reference.get_reference_body()
+                reference.get_reference_footer()
+                reference.save_and_open_reference()
+            except TypeError:
+                QMessageBox.critical(self.msg_error, 'Ошибка', 'У данного сотрудника нет данных за указанный период',
+                                     QMessageBox.Ok)
+        else:
+            reference.set_firm_blank(self.ui.checkBox.isChecked(), self.path_to_css)
+            reference.get_reference_header()
+            try:
+                reference.get_reference_body()
+                reference.get_reference_footer()
+                reference.save_and_open_reference()
+            except TypeError:
+                QMessageBox.critical(self.msg_error, 'Ошибка', 'У данного сотрудника нет данных за указанный период',
+                                     QMessageBox.Ok)
 
     def on_click(self):
         self.flag_mat_pom()
@@ -244,14 +261,9 @@ class Interface:
                     self.draw_reference(reference)
                 self.ui.comboBox.setCurrentText('')
                 self.result = []
+                print(self.path_to_css)
 
 
 
 if __name__ == "__main__":
     a = Interface()
-    """app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
-    sys.exit(app.exec_())"""

@@ -77,8 +77,6 @@ class ReferenceWithoutMatPom:
             for i in self.style_css:
                 new_file.write(i)
 
-
-
     def get_reference_header(self):
         if self.month_count  == "1":
             self.all_text[16] = "<p> за " + self.month_count + " месяц</p>"
